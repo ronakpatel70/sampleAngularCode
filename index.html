@@ -1,0 +1,170 @@
+    <!DOCTYPE html>  
+    <html xmlns="http://www.w3.org/1999/xhtml">  
+    <head>  
+        <title></title>  
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>  
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>  
+    </head>  
+    <body>  
+      
+        <div ng-app="mainApp" data-ng-controller="studentCtrl as vm" class="container">
+
+            <h3> Student Details</h3><hr>  
+            <div class="col-sm-12">
+
+                <div class="row">
+                    <div class="form-group col-sm-6">
+                      <label class="col-sm-4 control-label">First Name</label>
+                      <div class="col-sm-8">
+                        <input type="text" data-ng-model="vm.student.FirstName" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="form-group col-sm-6">
+                      <label class="col-sm-4 control-label">Last Name</label>
+                      <div class="col-sm-8">
+                        <input type="text" data-ng-model="vm.student.LastName" class="form-control" /></td>  
+                      </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-sm-6">
+                      <label class="col-sm-4 control-label">Email</label>
+                      <div class="col-sm-8">
+                        <input type="text" data-ng-model="vm.student.Email" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="form-group col-sm-6">
+                      <label class="col-sm-4 control-label">Address</label>
+                      <div class="col-sm-8">
+                        <input type="text" data-ng-model="vm.student.Address" class="form-control" /></td>  
+                      </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-sm-6">
+                        <input type="button" ng-hide="vm.isEdit" value="Save Data" data-ng-click="vm.addData()" class="btn btn-danger std-add-data"/>
+                        <input type="button" ng-show="vm.isEdit" value="Update Data" data-ng-click="vm.updateData()" class="btn btn-danger std-update-data"/>
+                    </div>
+                </div>
+              
+            </div> 
+
+            <div class="col-sm-12" ng-show="vm.stdList.length > 0">
+                <table border="1" class="table">  
+                    <thead>  
+                        <th>Roll No</th>  
+                        <th>First Name</th>  
+                        <th>Last Name</th>
+                        <th>Address</th>  
+                        <th>Email</th> 
+                        <th>Action</th>  
+                    </thead>  
+                    <tr data-ng-repeat="student in vm.stdList track by $index">  
+                        <td>{{ student.Id }}</td>  
+                        <td>{{ student.FirstName }}</td>  
+                        <td>{{ student.LastName }}</td>  
+                        <td>{{ student.Address }}</td>  
+                        <td>{{ student.Email }}</td>  
+                        <td>
+                            <input type="button" class="btn btn-primary" value="Edit" data-ng-click="vm.edit(student)" />
+                            <input type="button" class="btn btn-danger" value="Delete" data-ng-click="vm.deleteData(student)" /></td>  
+                    </tr>  
+                </table>  
+            </div>
+        </div>  
+      
+        <script type="text/javascript">  
+            angular.module("mainApp", []); 
+            
+            angular
+            .module('mainApp')
+            .controller('studentCtrl', studentCtrl); 
+
+            studentCtrl.$inject = ['studentService'];
+            function studentCtrl(studentService) { 
+
+                var vm = this; 
+      
+                vm.student = {};  
+                vm.isEdit = false;
+      
+                vm.stdList = studentService.getData();  
+
+                vm.addData = function () { 
+                    var lastId = studentService.getLastId(); 
+
+                    vm.student.Id = angular.copy(lastId + 1);
+                    vm.stdList.push(vm.student);  
+                    studentService.setData(vm.stdList);
+                    studentService.setLastId(vm.student.Id);
+
+                    resetForm();  
+                }  
+      
+                vm.deleteData = function (std) {  
+                    var _index = vm.stdList.indexOf(std);  
+                    vm.stdList.splice(_index, 1);  
+                    studentService.setData(vm.stdList);
+                }  
+      
+                vm.edit = function (std) {  
+                    vm.isEdit = true;
+                    vm.student = angular.copy(std);
+                }  
+      
+                vm.updateData = function () {  
+
+                    var _index = vm.stdList.map(function (val) {return val.Id}).indexOf(vm.student.Id);
+
+                    vm.stdList[_index] = vm.student;
+                    studentService.setData(vm.stdList);
+                    vm.isEdit = false;
+                    resetForm();  
+                }  
+      
+                function resetForm() {
+                    vm.student = {};
+                }  
+            }; 
+
+
+            angular
+            .module('mainApp')
+            .service('studentService', studentService);  
+
+            function studentService(){
+                var someValue = '';
+                var studentSrv = {
+                    setData: setData,
+                    getData: getData,
+                    getLastId: getLastId,
+                    setLastId: setLastId
+                };
+                return studentSrv;
+
+                function setData(data) {
+                    localStorage.setItem('StdList', JSON.stringify(data));
+                };
+
+                function getData() {
+                    return (localStorage.getItem('StdList') !== null && localStorage.getItem('StdList') !== 'undefined') ? JSON.parse(localStorage.getItem('StdList')) : [];
+                };
+
+                function setLastId(data) {
+                    localStorage.setItem('LastId', JSON.stringify(data));
+                };
+
+                function getLastId() {
+                    return (localStorage.getItem('LastId') !== null && localStorage.getItem('LastId') !== 'undefined') ? JSON.parse(localStorage.getItem('LastId')) : 0;
+                };
+            };
+        </script>  
+    </body>  
+    </html>  
+
